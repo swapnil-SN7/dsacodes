@@ -1,167 +1,205 @@
-#include<iostream>
+#include <iostream>
+#include <queue>
 using namespace std;
 
-
-class node{
-    public : 
+class Node {
+public:
     int data;
-    node*left;
-    node*right;
-    node(int dat){
+    Node* left;
+    Node* right;
+
+    Node(int data) {
         this->data = data;
         this->left = NULL;
-        this->right= NULL;
+        this->right = NULL;
     }
 };
 
-class nodedata{
-    public:
-    int size ;
-    int minval;
-    int maxval;
-    bool validBST;
-    nodedata(){
-
-    }
-    nodedata(int  size, int max, int min, bool valid){
-        this->size = size;
-        minval = min;
-        maxval = max;
-        validBST = valid;
-    }
-};
-
-
-node* insertINBST(node* root,int data){
+Node* insertIntoBST(Node* root, int data) {
     if (root == NULL) {
-       // this is first node we have to create
-       root = new node(data);
-       return root;
-
+        root = new Node(data);
+        return root;
     }
 
-    // no first node
-    if(root->data >data){
-        //insert into left 
-        root->left = insertINBST(root->left,data);
-    }
-
-    else{
-
-        //insert into right
-        root->right = insertINBST(root->right,data);
+    if (root->data > data) {
+        root->left = insertIntoBST(root->left, data);
+    } else {
+        root->right = insertIntoBST(root->right, data);
     }
     return root;
-
 }
 
-void takeinput(node* &root){
-    int data ;
-    cout << "Enter the data :"<<endl;
+void takeInput(Node*& root) {
+    int data;
+    cout << "Enter data for Node (enter -1 to stop): ";
     cin >> data;
-    while(data!=-1){
-        root = insertINBST(root,data);
-        cout << "Do you want to continue? Enter -1 for stop and any other number as data in BST."<<endl;
+
+    while (data != -1) {
+        root = insertIntoBST(root, data);
+        cout << "Enter data for Node (enter -1 to stop): ";
         cin >> data;
     }
 }
 
+void levelOrderTraversal(Node* root) {
+    queue<Node*> q;
+    q.push(root);
+    q.push(NULL);
 
-//find the node in bst return true if exist and assume there is only unique value in my bst
-node* findNodeinbst(node*root,int target){
-    //base 
-    if(root = NULL){
-        return NULL;
+    while (!q.empty()) {
+        Node* temp = q.front();
+        q.pop();
+
+        if (temp == NULL) {
+            cout << endl;
+            if (!q.empty()) {
+                q.push(NULL);
+            }
+        } else {
+            cout << temp->data << " ";
+            if (temp->left) {
+                q.push(temp->left);
+            }
+            if (temp->right) {
+                q.push(temp->right);
+            }
+        }
     }
-    if(root->data == target )
-    return root;
-    if(target < root->data ){
-        return findNodeinbst(root->left , target );
-    }
-    else{
-        return findNodeinbst(root->right , target );
-    }
-}
-int minVal(node* root) {
-	node* temp = root;
-	if(temp == NULL) {
-		return -1;
-	}
-
-	while(temp -> left != NULL) {
-		temp = temp ->left;
-	}
-	return temp -> data;
 }
 
-int maxval(node* root) {
-	node* temp = root;
-	if(temp == NULL) {
-		return -1;
-	}
-
-	while(temp -> right != NULL) {
-		temp = temp ->right;
-	}
-	return temp -> data;
-}
-
-
-void inOrderTraversal(node* root) {
-	//LNR
-	if(root == NULL)
-		return;
-
-	inOrderTraversal(root->left);
-	cout << root->data << " ";
-	inOrderTraversal(root->right);
-}
-node* deletenodeinbst(node* root, int target){
-    // base case 
-    if (root =NULL){
+Node* findNodeInBST(Node* root, int target) {
+    if (root == NULL) {
         return NULL;
     }
 
-    if(root ->data == target){
-        // isi ko delete karna hai
-        // 4 cases
-        if(root->left == NULL&& root->right == NULL){
-            //leaf node 
-            // delete root
+    if (root->data == target)
+        return root;
+
+    if (target > root->data) {
+        return findNodeInBST(root->right, target);
+    } else {
+        return findNodeInBST(root->left, target);
+    }
+}
+
+int minVal(Node* root) {
+    Node* temp = root;
+    if (temp == NULL) {
+        return -1;
+    }
+
+    while (temp->left != NULL) {
+        temp = temp->left;
+    }
+    return temp->data;
+}
+
+int maxVal(Node* root) {
+    Node* temp = root;
+    if (temp == NULL) {
+        return -1;
+    }
+
+    while (temp->right != NULL) {
+        temp = temp->right;
+    }
+    return temp->data;
+}
+
+Node* deleteNodeInBST(Node* root, int target) {
+    if (root == NULL) {
+        return NULL;
+    }
+
+    if (root->data == target) {
+        if (root->left == NULL && root->right == NULL) {
             return NULL;
-        }
-        else if(root->left == NULL && root->right!= NULL){
-            //only right child
-            //delete root
-            return root->right;
-        }
-        else if(root->left!= NULL && root-> right == NULL){
-            //only left child
-            //delete root
-            return root->left;
-
-        }
-        else{
-            //have both child
-            //final inorder predecessor in left subtree
-            int inorderpre = maxval(root->left);
-            //replace root->data with inorder predecessor 
-            root->data = inorderpre;
-            //delete inorder predeccessor from left subtree 
-            root->left = deletenodeinbst(root->left ,inorderpre);
+        } else if (root->left == NULL && root->right != NULL) {
+            Node* child = root->right;
+            return child;
+        } else if (root->left != NULL && root->right == NULL) {
+            Node* child = root->left;
+            return child;
+        } else {
+            int inorderPre = maxVal(root->left);
+            root->data = inorderPre;
+            root->left = deleteNodeInBST(root->left, inorderPre);
             return root;
         }
-    }
-
-    else if(target > root->data){
-        //go to right side of tree
-        root ->right = deletenodeinbst(root->right,target);
-    }
-    else if(target < root->data){
-        //go to left side of tree
-        root->left = deletenodeinbst(root->left,target);
+    } else if (target > root->data) {
+        root->right = deleteNodeInBST(root->right, target);
+    } else if (target < root->data) {
+        root->left = deleteNodeInBST(root->left, target);
     }
     return root;
 }
 
-int main(){}
+void printMenu() {
+    cout << "Menu:" << endl;
+    cout << "1. Insert a node into the BST" << endl;
+    cout << "2. Delete a node from the BST" << endl;
+    cout << "3. Search for a node in the BST" << endl;
+    cout << "4. Find the minimum value in the BST" << endl;
+    cout << "5. Find the maximum value in the BST" << endl;
+    cout << "6. Print level-order traversal" << endl;
+    cout << "7. Quit" << endl;
+}
+
+int main() {
+    Node* root = NULL;
+    int choice;
+
+    do {
+        printMenu();
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1: {
+                int data;
+                cout << "Enter data to insert: ";
+                cin >> data;
+                root = insertIntoBST(root, data);
+                break;
+            }
+            case 2: {
+                int target;
+                cout << "Enter data to delete: ";
+                cin >> target;
+                root = deleteNodeInBST(root, target);
+                break;
+            }
+            case 3: {
+                int target;
+                cout << "Enter data to search: ";
+                cin >> target;
+                Node* result = findNodeInBST(root, target);
+                if (result) {
+                    cout << "Node found in the BST." << endl;
+                } else {
+                    cout << "Node not found in the BST." << endl;
+                }
+                break;
+            }
+            case 4:
+                cout << "Minimum value: " << minVal(root) << endl;
+                break;
+            case 5:
+                cout << "Maximum value: " << maxVal(root) << endl;
+                break;
+            case 6:
+                cout << "Level-order traversal:" << endl;
+                levelOrderTraversal(root);
+                cout << endl;
+                break;
+            case 7:
+                cout << "Quitting the program." << endl;
+                break;
+            default:
+                cout << "Invalid choice. Please try again." << endl;
+        }
+
+    } while (choice != 7);
+
+    return 0;
+}
